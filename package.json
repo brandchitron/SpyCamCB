@@ -1,0 +1,15 @@
+{
+  "name": "selfie-sender",
+  "version": "1.0.0",
+  "description": "Auto selfie capture and send to Telegram bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "form-data": "^4.0.0"
+  }
+}
