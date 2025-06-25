@@ -43,7 +43,7 @@ app.post("/upload", async (req, res) => {
     form.append("photo", buffer, { filename: "selfie.jpg" });
     form.append("caption", getCaption());
 
-    await axios.post(\`https://api.telegram.org/bot\${BOT_TOKEN}/sendPhoto\`, form, {
+    await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, form, {
       headers: form.getHeaders()
     });
 
